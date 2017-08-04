@@ -14,7 +14,7 @@
 /**
  * Example:
  *
-    // resize with smart crop, add logo and save
+    // Easy to use image manipulation tool based on PHP-GD extension
     include 'GDImage.php';
 
     $logo = new GDImage('logo.png');
@@ -90,13 +90,6 @@ class GDImage
     protected $savealpha = false;
 
     /**
-     * Errors
-     *
-     * @var array
-     */
-    public $error = array();
-
-    /**
      * Source image type
      *
      * @var null|string
@@ -108,32 +101,32 @@ class GDImage
      *
      * @var null|int
      */
-    protected $width = null;
+    public $width = null;
 
     /**
      * Source image height
      *
      * @var null|int
      */
-    protected $height = null;
+    public $height = null;
 
     /**
      * Source image file name
      *
      * @var null|string
      */
-    protected $fileName = null;
+    public $src = null;
     
     /**
      * Constructor.
      *
      * @param string $fileName Source image file name
+     * @throws \Exception
      */
     public function __construct($fileName)
     {
         if (!function_exists('imagecreatefrompng')) {
-            $this->error[] = 'GD is not available';
-            return false;
+            throw new \Exception('GD is not available');
         }
 
         // get real memory limit
@@ -161,12 +154,12 @@ class GDImage
      * @param string $fileName Source image file name
      *
      * @return $this|bool
+     * @throws \Exception
      */
     public function getImage($fileName)
     {
         if (!file_exists($fileName)) {
-            $this->error[] = 'Image ' . $fileName . ' is not exists';
-            return false;
+            throw new \Exception('Image ' . $fileName . ' is not exists');
         }
        
         $info = getimagesize($fileName);
@@ -174,15 +167,13 @@ class GDImage
         $channels = empty($info['channels']) ? 3 : $info['channels'];
         $bits = empty($info['bits']) ? 8 : $info['bits'];
 
-        if (($info[0] * $info[1] * ($channels * $bits / 8)) > $this->memoryLimit) {
-            $this->error[] = 'image is larger then '
-                . $this->memoryLimit . ' (memory limit)';
-            return false;
+        if ($this->memoryLimit > 0 && ($info[0] * $info[1] * ($channels * $bits / 8)) > $this->memoryLimit) {
+            throw new \Exception('Image is larger then memory limit ' . $this->memoryLimit);
         }
 
         $this->width = $info[0];
         $this->height = $info[1];
-        $this->fileName = $fileName;
+        $this->src = $fileName;
 
         // create new image from fileName
         switch($info[2]) {
@@ -199,8 +190,7 @@ class GDImage
             $this->image = imagecreatefrompng($fileName);
             break;
         default:
-            $this->error[] = 'Supported formats are gif, jpg & png only';
-            return false; // gif, jpg & png only
+            throw new \Exception('Supported formats are gif, jpg & png only');
             break;
         }
 
@@ -240,8 +230,8 @@ class GDImage
         $height = $y2 - $y1;
         
         $image = imagecreatetruecolor($width, $height);
-        
-        $this->setAlpha($this->image, $this->alphablending, $this->savealpha);
+
+        $this->alpha($this->alphablending, $this->savealpha);
         
         imagecopy($image, $this->image, 0, 0, $x1, $y1, $width, $height);
         
@@ -468,8 +458,8 @@ class GDImage
             }
         }
 
-        $this->setAlpha($this->image, $this->alphablending, $this->savealpha);
-        
+        $this->alpha(true, false);
+
         imagecopy(
             $this->image,
             $overlay->image,
@@ -532,14 +522,15 @@ class GDImage
      * Set alpha channel properties for image
      *
      * @param bool $alphablending blending
-     * @param bool $savealpha     save
+     * @param bool $savealpha     alpha flag
      *
      * @return $this
      */
-    public function alpha($alphablending = true, $savealpha = true)
+    public function alpha($alphablending = false, $savealpha = true)
     {
         $this->alphablending = $alphablending;
         $this->savealpha = $savealpha;
+        $this->setAlpha($this->image, $alphablending, $savealpha);
         return $this;
     }
 
@@ -547,15 +538,15 @@ class GDImage
      * Set alpha channel properties for image
      *
      * @param resource $image    GD library resource
-     * @param bool     $blending blending
-     * @param bool     $save     save
+     * @param bool     $alphablending blending
+     * @param bool     $savealpha     alpha flag
      *
      * @return bool
      */
-    protected function setAlpha($image, $blending, $save)
+    protected function setAlpha($image, $alphablending, $savealpha)
     {
-        imagealphablending($image, $blending);
-        imagesavealpha($image, $save);
+        imagealphablending($image, $alphablending);
+        imagesavealpha($image, $savealpha);
         return true;
     }
 
@@ -563,13 +554,17 @@ class GDImage
     /**
      * Save image
      *
-     * @param string      $fileName new image file name
-     * @param null|string $format   new image format,
-     *                              if not set, will be detected from file name
+     * @param string|resource $to     The path or an open stream resource
+     *                                (which is automatically being closed
+     *                                after this function returns) to save
+     *                                the file to. If not set or NULL, the raw
+     *                                image stream will be outputted directly.
+     * @param null|string     $format new image format, if not set,
+     *                                will be detected from file name
      *
      * @return bool|GDImage
      */
-    public function save($fileName, $format = null)
+    public function save($to, $format = null)
     {
 
         if (empty($this->image)) {
@@ -577,23 +572,23 @@ class GDImage
         }
         
         if (empty($format)) {
-            $dotPos = strrpos($fileName, '.');
-            $format = strtolower($dotPos < 1 ? '' : substr($fileName, $dotPos + 1));
+            $dotPos = strrpos($to, '.');
+            $format = strtolower($dotPos < 1 ? '' : substr($to, $dotPos + 1));
         }
 
         switch ($format) {
         case 'gif':
-            $result = imagegif($this->image, $fileName);
+            $result = imagegif($this->image, $to);
             break;
         case 'png8':
         case 'png24':
         case 'png':
-            $result = imagepng($this->image, $fileName, $this->pngQuality);
+            $result = imagepng($this->image, $to, $this->pngQuality);
             break;
         case 'jpeg':
         case 'jpg':
         default:
-            $result = imagejpeg($this->image, $fileName, $this->jpgQuality);
+            $result = imagejpeg($this->image, $to, $this->jpgQuality);
             break;
         }
         return empty($result) ? false : $this;
@@ -611,6 +606,17 @@ class GDImage
     {
         $this->fillColor = $color;
         return true;
+    }
+
+
+    /**
+     * Get image type
+     *
+     * @return null|string
+     */
+    public function getImageType()
+    {
+        return $this->type;
     }
 
 

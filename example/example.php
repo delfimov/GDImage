@@ -22,10 +22,9 @@ header('Content-Type: text/html; charset=utf-8');
 <div class="container">
 
     <div class="starter-template">
-        <h1>Translate</h1>
+        <h1>GDImage</h1>
         <p class="lead">
-            Easy to use i18n translation PHP class for multi-language websites
-            with language auto detection and plurals.
+
         </p>
     </div>
 
@@ -34,7 +33,17 @@ header('Content-Type: text/html; charset=utf-8');
     <h4>Example output</h4>
 <pre><?php
 
-    echo 'to be done...';
+    include '../src/GDImage.php';
+
+    $logo = new DElfimov\GDImage\GDImage('../tests/test.gif');
+    $logo
+        ->resize(300, 300, true)
+        ->opacity(30);
+
+    $image = new DElfimov\GDImage\GDImage('../tests/test.jpg');
+    $image->resize(600, 400, true)
+        ->merge($logo, 'right', 'bottom')
+        ->save(__DIR__ . '/' . 'example.jpg');
 
 ?></pre>
 

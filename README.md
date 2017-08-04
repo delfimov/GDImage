@@ -31,4 +31,5 @@ to be done
 
  * Examples
  * Readme
- * Unit tests
+ * More unit tests
+ * php-cs-fixer script
