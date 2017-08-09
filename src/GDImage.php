@@ -121,6 +121,7 @@ class GDImage
      * Constructor.
      *
      * @param string $fileName Source image file name
+     *
      * @throws \Exception
      */
     public function __construct($fileName)
@@ -134,9 +135,9 @@ class GDImage
         if (preg_match('/^(\d+)(.)$/', $memLimit, $matches)) {
             if ($matches[2] == 'G') {
                 $memLimit = $matches[1] * 1024 * 1024 * 1024; // nnnG -> nnn GB
-            } else if ($matches[2] == 'M') {
+            } elseif ($matches[2] == 'M') {
                 $memLimit = $matches[1] * 1024 * 1024; // nnnM -> nnn MB
-            } else if ($matches[2] == 'K') {
+            } elseif ($matches[2] == 'K') {
                 $memLimit = $matches[1] * 1024; // nnnK -> nnn KB
             }
         }
@@ -167,8 +168,12 @@ class GDImage
         $channels = empty($info['channels']) ? 3 : $info['channels'];
         $bits = empty($info['bits']) ? 8 : $info['bits'];
 
-        if ($this->memoryLimit > 0 && ($info[0] * $info[1] * ($channels * $bits / 8)) > $this->memoryLimit) {
-            throw new \Exception('Image is larger then memory limit ' . $this->memoryLimit);
+        if ($this->memoryLimit > 0
+            && ($info[0] * $info[1] * ($channels * $bits / 8)) > $this->memoryLimit
+        ) {
+            throw new \Exception(
+                'Image is larger then memory limit ' . $this->memoryLimit
+            );
         }
 
         $this->width = $info[0];
@@ -176,27 +181,113 @@ class GDImage
         $this->src = $fileName;
 
         // create new image from fileName
-        switch($info[2]) {
-        case IMAGETYPE_GIF:
-            $this->type = 'gif';
-            $this->image = imagecreatefromgif($fileName);
-            break;
-        case IMAGETYPE_JPEG:
-            $this->type = 'jpg';
-            $this->image = imagecreatefromjpeg($fileName);
-            break;
-        case IMAGETYPE_PNG:
-            $this->type = 'png';
-            $this->image = imagecreatefrompng($fileName);
-            break;
-        default:
-            throw new \Exception('Supported formats are gif, jpg & png only');
-            break;
+        switch ($info[2]) {
+            case IMAGETYPE_GIF:
+                $this->type = 'gif';
+                $this->image = imagecreatefromgif($fileName);
+                break;
+            case IMAGETYPE_JPEG:
+                $this->type = 'jpg';
+                $this->image = imagecreatefromjpeg($fileName);
+                break;
+            case IMAGETYPE_PNG:
+                $this->type = 'png';
+                $this->image = imagecreatefrompng($fileName);
+                break;
+            default:
+                throw new \Exception('Supported formats are gif, jpg & png only');
+                break;
+        }
+
+        if (empty($this->image) || get_resource_type($this->image) != 'gd') {
+            throw new \Exception('Error while reading file ' . $this->src);
+        }
+
+        if ($this->type == 'jpg') {
+            $this->imageExifOrientation();
         }
 
         return $this;
     }
 
+
+    /**
+     * Rotate image if PHP Exif extension is avialable.
+     * Exif Orientation (source: http://www.exif.org/Exif2-2.PDF)
+     * 1 = The 0th row is at the visual top of the image, and the 0th column is the visual left-hand side.
+     * 2 = The 0th row is at the visual top of the image, and the 0th column is the visual right-hand side.
+     * 3 = The 0th row is at the visual bottom of the image, and the 0th column is the visual right-hand side.
+     * 4 = The 0th row is at the visual bottom of the image, and the 0th column is the visual left-hand side.
+     * 5 = The 0th row is the visual left-hand side of the image, and the 0th column is the visual top.
+     * 6 = The 0th row is the visual right-hand side of the image, and the 0th column is the visual top.
+     * 7 = The 0th row is the visual right-hand side of the image, and the 0th column is the visual bottom.
+     * 8 = The 0th row is the visual left-hand side of the image, and the 0th column is the visual bottom.
+     *
+     * @return null
+     */
+    private function imageExifOrientation()
+    {
+        if (function_exists('exif_read_data')) {
+            $exif = exif_read_data($this->src);
+            if (!empty($exif) && !empty($exif['Orientation'])) {
+                if ($exif['Orientation'] == 6) {
+                    $this->rotate(270);
+                }
+                if ($exif['Orientation'] == 5 || $exif['Orientation'] == 7 || $exif['Orientation'] == 8) {
+                    $this->rotate(90);
+                }
+                if ($exif['Orientation'] == 2 || $exif['Orientation'] == 3 || $exif['Orientation'] == 7) {
+                    $this->flipHorizontal();
+                }
+                if ($exif['Orientation'] == 3 || $exif['Orientation'] == 4 || $exif['Orientation'] == 5) {
+                    $this->flipVertical();
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Flips an image horizontally
+     *
+     * @return $this
+     */
+    public function flipHorizontal()
+    {
+        imageflip($this->image, IMG_FLIP_HORIZONTAL);
+        return $this;
+    }
+
+    /**
+     * Flips an image vertically
+     *
+     * @return $this
+     */
+    public function flipVertical()
+    {
+        imageflip($this->image, IMG_FLIP_VERTICAL);
+        return $this;
+    }
+
+    /**
+     * Rotate image
+     *
+     * @param float|int $angle             Rotation angle, in degrees
+     * @param null      $bgColor           Specifies the color of the uncovered zone after the rotation
+     *                                      (see imagecolorallocate())
+     * @param int       $ignoreTransparent If set and non-zero, transparent colors are ignored
+     *
+     * @return $this
+     */
+    public function rotate($angle, $bgColor = null, $ignoreTransparent = 0)
+    {
+        $this->alpha();
+        $this->image = imagerotate($this->image, $angle, $bgColor, $ignoreTransparent);
+        $this->alpha();
+        $this->width = imagesx($this->image);
+        $this->height = imagesy($this->image);
+        return $this;
+    }
 
     /**
      * Crop image
@@ -260,15 +351,15 @@ class GDImage
             return false;
         }
     
-        if ($width == $this->width && $this->height == $height) { 
+        if ($width == $this->width && $this->height == $height) {
             // nothing to do
-        } else if ($this->width > $width && $this->height == $height && $crop) {
+        } elseif ($this->width > $width && $this->height == $height && $crop) {
             $x = round(($this->width - $width)/2);
             $this->crop($x, 0, $x + $width, $height);
-        } else if ($this->height > $height && $this->width == $width && $crop) {
+        } elseif ($this->height > $height && $this->width == $width && $crop) {
             $y = round(($this->height - $height)/2);
             $this->crop(0, $y, $width, $height + $y);
-        } else if ($width > $this->width && $this->height == $height && !$crop) {
+        } elseif ($width > $this->width && $this->height == $height && !$crop) {
             $x = round(($width - $this->width)/2);
             $newImage = imagecreatetruecolor($width, $height);
             if (!$this->alphablending) {
@@ -296,7 +387,7 @@ class GDImage
             );
             $this->image = $newImage;
             $this->width = $width;
-        } else if ($height > $this->height && $this->width == $width && !$crop) {
+        } elseif ($height > $this->height && $this->width == $width && !$crop) {
             $y = round(($height - $this->height)/2);
             $newImage = imagecreatetruecolor($width, $height);
             if (!$this->alphablending) {
@@ -324,9 +415,7 @@ class GDImage
             );
             $this->image = $newImage;
             $this->width = $width;
-            
         } else {
-    
             $srcX = 0;
             $srcY = 0;
             $dstX = 0;
@@ -359,7 +448,7 @@ class GDImage
                         $dstHeight = round($width / $oldRatio);
                         $dstY = round(($height - $dstHeight) / 2);
                     }
-                } else if ($oldRatio < $newRatio) { // book to album
+                } elseif ($oldRatio < $newRatio) { // book to album
                     if ($crop) {
                         $wr = $this->width / $newRatio;
                         $srcY = round(($this->height - $wr) / 2);
@@ -385,7 +474,7 @@ class GDImage
                     127
                 );
                 imagefill($newImage, 0, 0, $color);
-            } else if ($dstY > 0 || $dstX > 0) {
+            } elseif ($dstY > 0 || $dstX > 0) {
                 $color = imagecolorallocate(
                     $newImage,
                     $this->fillColor[0],
@@ -415,7 +504,6 @@ class GDImage
         }
 
         return $this;
-    
     }
 
 
@@ -441,9 +529,9 @@ class GDImage
         if (!is_int($posX)) {
             if ($posX == 'left') {
                 $posX = 0;
-            } else if ($posX == 'right') {
+            } elseif ($posX == 'right') {
                 $posX = $this->width - $overlay->width;
-            } else if ($posX == 'center') {
+            } elseif ($posX == 'center') {
                 $posX = round(($this->width - $overlay->width)/2);
             }
         }
@@ -451,9 +539,9 @@ class GDImage
         if (!is_int($posY)) {
             if ($posY == 'top') {
                 $posY = 0;
-            } else if ($posY == 'bottom') {
+            } elseif ($posY == 'bottom') {
                 $posY = $this->height - $overlay->height;
-            } else if ($posY == 'center') {
+            } elseif ($posY == 'center') {
                 $posY = round(($this->height - $overlay->height)/2);
             }
         }
@@ -489,7 +577,7 @@ class GDImage
         }
         
         // $this->setAlpha($this->image, false, true);
-        imagesavealpha($this->image, true); 
+        imagesavealpha($this->image, true);
         imagealphablending($this->image, false);
         
         $opacity /= 100;
@@ -537,7 +625,7 @@ class GDImage
     /**
      * Set alpha channel properties for image
      *
-     * @param resource $image    GD library resource
+     * @param resource $image         GD library resource
      * @param bool     $alphablending blending
      * @param bool     $savealpha     alpha flag
      *
@@ -577,19 +665,19 @@ class GDImage
         }
 
         switch ($format) {
-        case 'gif':
-            $result = imagegif($this->image, $to);
-            break;
-        case 'png8':
-        case 'png24':
-        case 'png':
-            $result = imagepng($this->image, $to, $this->pngQuality);
-            break;
-        case 'jpeg':
-        case 'jpg':
-        default:
-            $result = imagejpeg($this->image, $to, $this->jpgQuality);
-            break;
+            case 'gif':
+                $result = imagegif($this->image, $to);
+                break;
+            case 'png8':
+            case 'png24':
+            case 'png':
+                $result = imagepng($this->image, $to, $this->pngQuality);
+                break;
+            case 'jpeg':
+            case 'jpg':
+            default:
+                $result = imagejpeg($this->image, $to, $this->jpgQuality);
+                break;
         }
         return empty($result) ? false : $this;
     }
@@ -619,5 +707,32 @@ class GDImage
         return $this->type;
     }
 
-
+    /**
+     * @return bool
+     */
+    public function isAnimated()
+    {
+        $fileContents = file_get_contents($this->src);
+        $filePosition = 0;
+        $count = 0;
+        // no need to continue when we find the second frame
+        while ($count < 2) {
+            $where1 = strpos($fileContents, "\x00\x21\xF9\x04", $filePosition);
+            if ($where1 === false) {
+                break;
+            } else {
+                $filePosition = $where1 + 1;
+                $where2 = strpos($fileContents, "\x00\x2C", $filePosition);
+                if ($where2 === false) {
+                    break;
+                } else {
+                    if ($where1 + 8 == $where2) {
+                        $count++;
+                    }
+                    $filePosition = $where2+1;
+                }
+            }
+        }
+        return $count > 1;
+    }
 }

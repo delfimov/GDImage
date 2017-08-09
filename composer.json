@@ -37,6 +37,10 @@
         "phpunit/phpunit": "^6.1"
     },
 
+    "suggest": {
+        "ext-exif": "Needed for orientation auto detection for JPEG images"
+    },
+
     "scripts" : {
         "phpcs": "php ./vendor/squizlabs/php_codesniffer/bin/phpcs ./src/GDImage.php",
         "test": [

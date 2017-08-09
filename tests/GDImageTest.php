@@ -15,6 +15,21 @@ class TranslateTest extends TestCase
         'gif' => 'test.gif',
     ];
 
+    const TEST_IMAGES_GIF = [
+        [
+            'isAnimated' => false,
+            'src' => 'test.png'
+        ],
+        [
+            'isAnimated' => false,
+            'src' => 'test.gif'
+        ],
+        [
+            'isAnimated' => true,
+            'src' => 'ani.gif'
+        ],
+    ];
+
     const WATERMARK = 'water.png';
     const LOGO = 'logo.png';
 
@@ -55,6 +70,14 @@ class TranslateTest extends TestCase
         unlink($filename);
     }
 
+    /**
+     * @dataProvider animatedProvider
+     */
+    public function testIsAnimated($isAnimated, GDImage $image)
+    {
+        $this->assertEquals(true, $image instanceof GDImage);
+        $this->assertEquals(true, $image->isAnimated() == $isAnimated);
+    }
 
     /**
      * @dataProvider heavytestProvider
@@ -67,7 +90,13 @@ class TranslateTest extends TestCase
 
         $image = new GDImage($src);
         $srcRatio = $image->width / $image->height;
-        $image->resize($width, $height, true);
+
+        $keepFullImage = rand(0, 100) > 50;
+        if ($keepFullImage) {
+            $image->setFillColor([255, 0, 0]);
+        }
+
+        $image->resize($width, $height, !$keepFullImage);
 
         $watermark = new GDImage(__DIR__ . DIRECTORY_SEPARATOR . self::WATERMARK);
         $image->merge($watermark->alpha(), 'center', 'center');
@@ -77,10 +106,12 @@ class TranslateTest extends TestCase
 
         $posX = $width - $logo->width;
         $posY = $height - $logo->height;
-        if ($srcRatio > $dstRatio) {
-            $posY = $posY - ($height - $width/$srcRatio)/2;
-        } else {
-            $posX = $posX - ($width - $height*$srcRatio)/2;
+        if ($keepFullImage) {
+            if ($srcRatio > $dstRatio) {
+                $posY = $posY - ($height - $width/$srcRatio)/2;
+            } else {
+                $posX = $posX - ($width - $height*$srcRatio)/2;
+            }
         }
         $image->merge($logo->alpha(), $posX, $posY);
         $this->assertEquals(true, $logo instanceof GDImage);
@@ -89,8 +120,7 @@ class TranslateTest extends TestCase
 
         $this->assertEquals(true, $image instanceof GDImage);
         $this->assertFileExists($dst);
-
-        unlink($dst);
+//        unlink($dst);
     }
 
 
@@ -102,6 +132,19 @@ class TranslateTest extends TestCase
             $images[] = [
                 $format,
                 new GDImage(__DIR__ . DIRECTORY_SEPARATOR . $image)
+            ];
+        }
+        return $images;
+    }
+
+
+    public function animatedProvider()
+    {
+        $images = [];
+        foreach (self::TEST_IMAGES_GIF as $image) {
+            $images[] = [
+                $image['isAnimated'],
+                new GDImage(__DIR__ . DIRECTORY_SEPARATOR . $image['src'])
             ];
         }
         return $images;
