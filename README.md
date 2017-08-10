@@ -1,3 +1,5 @@
+[![StyleCI](https://styleci.io/repos/99135056/shield?branch=master)](https://styleci.io/repos/99135056)
+
 # GDImage
 
 Easy to use image manipulation tool based on PHP-GD extension.
