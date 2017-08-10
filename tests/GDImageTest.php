@@ -9,13 +9,13 @@ use delfimov\GDImage\GDImage;
 class TranslateTest extends TestCase
 {
 
-    const TEST_IMAGES = [
+    private $TEST_IMAGES = [
         'jpg' => 'test.jpg',
         'png' => 'test.png',
         'gif' => 'test.gif',
     ];
 
-    const TEST_IMAGES_GIF = [
+    private $TEST_IMAGES_GIF = [
         [
             'isAnimated' => false,
             'src' => 'test.png'
@@ -128,7 +128,7 @@ class TranslateTest extends TestCase
     public function imageProvider()
     {
         $images = [];
-        foreach (self::TEST_IMAGES as $format => $image) {
+        foreach ($this->TEST_IMAGES as $format => $image) {
             $images[] = [
                 $format,
                 new GDImage(__DIR__ . DIRECTORY_SEPARATOR . $image)
@@ -141,7 +141,7 @@ class TranslateTest extends TestCase
     public function animatedProvider()
     {
         $images = [];
-        foreach (self::TEST_IMAGES_GIF as $image) {
+        foreach ($this->TEST_IMAGES_GIF as $image) {
             $images[] = [
                 $image['isAnimated'],
                 new GDImage(__DIR__ . DIRECTORY_SEPARATOR . $image['src'])
