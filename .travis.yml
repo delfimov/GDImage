@@ -23,14 +23,11 @@ matrix:
 
 before_install:
   - sudo apt-get update > /dev/null
+  - if [ "$PHPUNIT_VERSION" != "" ]; then composer remove phpunit/phpunit --dev; composer require phpunit/phpunit:${PHPUNIT_VERSION} --dev --ignore-platform-reqs --no-update; fi;
 
 install:
   - sudo apt-get install -y --force-yes php5-gd
-  - composer install
-
-before_script:
-    - if [ "$PHPUNIT_VERSION" != "" ]; then composer remove phpunit/phpunit --dev; composer require phpunit/phpunit:${PHPUNIT_VERSION} --dev --ignore-platform-reqs --no-update; fi;
-    - composer install --prefer-dist --no-interaction --no-scripts --no-progress
+  - composer install --prefer-dist --no-interaction --no-scripts --no-progress
 
 script:
   - composer run-script test
