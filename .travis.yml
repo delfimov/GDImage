@@ -8,10 +8,13 @@ matrix:
     include:
         - php: 7.1
           env: PHPUNIT_VERSION=6.*
+          env: PHP_VER=7.1
         - php: 7.0
           env: PHPUNIT_VERSION=6.*
+          env: PHP_VER=7.0
         - php: 5.6
           env: PHPUNIT_VERSION=5.*
+          env: PHP_VER=5
         - php: 5.5
           env: PHPUNIT_VERSION=4.*
         - php: 5.4
@@ -23,6 +26,7 @@ matrix:
 
 before_install:
   - sudo apt-get update > /dev/null
+  - if [ "$TRAVIS_PHP_VERSION" = "hhvm" ]; then echo 'xdebug.enable = on' >> /etc/hhvm/php.ini; fi
   - if [ "$PHPUNIT_VERSION" != "" ]; then composer remove phpunit/phpunit --dev; fi;
   - if [ "$PHPUNIT_VERSION" != "" ]; then composer require "phpunit/phpunit:${PHPUNIT_VERSION}" --dev --ignore-platform-reqs; fi;
 

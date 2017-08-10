@@ -71,9 +71,9 @@ class GDImage
     /**
      * An image resource, returned by one of the image creation functions
      *
-     * @var null|resource
+     * @var resource
      */
-    public $image = null;
+    public $image;
 
     /**
      * Alphablending
@@ -364,61 +364,9 @@ class GDImage
             $y = round(($this->height - $height)/2);
             $this->crop(0, $y, $width, $height + $y);
         } elseif ($width > $this->width && $this->height == $height && !$crop) {
-            $x = round(($width - $this->width)/2);
-            $newImage = imagecreatetruecolor($width, $height);
-            if (!$this->alphablending) {
-                imagefill(
-                    $newImage,
-                    0,
-                    0,
-                    imagecolorallocate(
-                        $newImage,
-                        $this->fillColor[0],
-                        $this->fillColor[1],
-                        $this->fillColor[2]
-                    )
-                );
-            }
-            imagecopy(
-                $newImage,
-                $this->image,
-                $x,
-                0,
-                0,
-                0,
-                $this->width,
-                $this->height
-            );
-            $this->image = $newImage;
-            $this->width = $width;
+            $this->createCopyImage(round(($width - $this->width)/2), 0, $width, $height);
         } elseif ($height > $this->height && $this->width == $width && !$crop) {
-            $y = round(($height - $this->height)/2);
-            $newImage = imagecreatetruecolor($width, $height);
-            if (!$this->alphablending) {
-                imagefill(
-                    $newImage,
-                    0,
-                    0,
-                    imagecolorallocate(
-                        $newImage,
-                        $this->fillColor[0],
-                        $this->fillColor[1],
-                        $this->fillColor[2]
-                    )
-                );
-            }
-            imagecopy(
-                $newImage,
-                $this->image,
-                0,
-                $y,
-                0,
-                0,
-                $this->width,
-                $this->height
-            );
-            $this->image = $newImage;
-            $this->width = $width;
+            $this->createCopyImage(0, round(($height - $this->height)/2), $width, $height);
         } else {
             $srcX = 0;
             $srcY = 0;
@@ -510,6 +458,35 @@ class GDImage
         return $this;
     }
 
+    private function createCopyImage($x, $y, $width, $height)
+    {
+        $newImage = imagecreatetruecolor($width, $height);
+        if (!$this->alphablending) {
+            imagefill(
+                $newImage,
+                0,
+                0,
+                imagecolorallocate(
+                    $newImage,
+                    $this->fillColor[0],
+                    $this->fillColor[1],
+                    $this->fillColor[2]
+                )
+            );
+        }
+        imagecopy(
+            $newImage,
+            $this->image,
+            $x,
+            $y,
+            0,
+            0,
+            $this->width,
+            $this->height
+        );
+        $this->image = $newImage;
+        $this->width = $width;
+    }
 
     /**
      * Merge image with overlay
@@ -580,10 +557,8 @@ class GDImage
             return false;
         }
         
-        // $this->setAlpha($this->image, false, true);
-        imagesavealpha($this->image, true);
-        imagealphablending($this->image, false);
-        
+        $this->alpha();
+
         $opacity /= 100;
         for ($x = 0; $x < $this->width; $x++) {
             for ($y = 0; $y < $this->height; $y++) {
