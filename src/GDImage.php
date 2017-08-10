@@ -228,7 +228,11 @@ class GDImage
     private function imageExifOrientation()
     {
         if (function_exists('exif_read_data')) {
-            $exif = exif_read_data($this->src);
+            try {
+                $exif = exif_read_data($this->src);
+            } catch (\Exception $e) {
+                $exif = false;
+            }
             if (!empty($exif) && !empty($exif['Orientation'])) {
                 if ($exif['Orientation'] == 6) {
                     $this->rotate(270);
@@ -711,6 +715,9 @@ class GDImage
      */
     public function isAnimated()
     {
+        if ($this->type != 'gif') {
+            return false;
+        }
         $fileContents = file_get_contents($this->src);
         $filePosition = 0;
         $count = 0;
