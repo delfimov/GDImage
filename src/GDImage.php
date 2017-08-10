@@ -654,7 +654,6 @@ class GDImage
      */
     public function save($to, $format = null)
     {
-
         if (empty($this->image)) {
             return false;
         }
