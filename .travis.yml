@@ -24,7 +24,7 @@ matrix:
 before_install:
   - sudo apt-get update > /dev/null
   - if [ "$PHPUNIT_VERSION" != "" ]; then composer remove phpunit/phpunit --dev; fi;
-  - if [ "$PHPUNIT_VERSION" != "" ]; then composer require "phpunit/phpunit:${PHPUNIT_VERSION}" --dev --ignore-platform-reqs --no-update; fi;
+  - if [ "$PHPUNIT_VERSION" != "" ]; then composer require "phpunit/phpunit:${PHPUNIT_VERSION}" --dev --ignore-platform-reqs; fi;
 
 install:
   - sudo apt-get install -y --force-yes php5-gd
