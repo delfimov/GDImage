@@ -3,7 +3,7 @@
     "license": "MIT",
     "type": "library",
     "description": "Easy to use image manipulation tool based on PHP-GD extension",
-    "keywords": ["GD", "image", "resize", "merge", "overlay"],
+    "keywords": ["GD", "php-gd", "image", "resize", "rotate", "watermark", "merge", "overlay"],
 
     "homepage": "https://github.com/delfimov/gdimage/",
 
@@ -42,7 +42,7 @@
     },
 
     "scripts" : {
-        "phpcs": "php ./vendor/squizlabs/php_codesniffer/bin/phpcs ./src/GDImage.php",
+        "phpcs": "php ./vendor/squizlabs/php_codesniffer/bin/phpcs",
         "test": [
             "php ./vendor/phpunit/phpunit/phpunit --bootstrap src/GDImage.php tests/GDImageTest"
         ]
