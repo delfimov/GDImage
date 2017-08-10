@@ -44,7 +44,7 @@
     "scripts" : {
         "phpcs": "php ./vendor/squizlabs/php_codesniffer/bin/phpcs",
         "test": [
-            "php ./vendor/phpunit/phpunit/phpunit --bootstrap src/GDImage.php tests/GDImageTest"
+            "php ./vendor/bin/phpunit"
         ]
     }
 
