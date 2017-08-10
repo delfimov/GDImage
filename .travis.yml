@@ -28,7 +28,7 @@ before_install:
 
 install:
   - sudo apt-get install -y --force-yes php5-gd
-  - composer install --prefer-dist --no-interaction --no-scripts --no-progress
+  - composer update --prefer-dist --no-interaction --no-scripts --no-progress
 
 script:
   - composer run-script test
