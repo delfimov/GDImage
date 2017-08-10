@@ -99,14 +99,14 @@ class GDImage
     /**
      * Source image width
      *
-     * @var null|int
+     * @var null|int|double
      */
     public $width = null;
 
     /**
      * Source image height
      *
-     * @var null|int
+     * @var null|int|double
      */
     public $height = null;
 
@@ -358,15 +358,15 @@ class GDImage
         if ($width == $this->width && $this->height == $height) {
             // nothing to do
         } elseif ($this->width > $width && $this->height == $height && $crop) {
-            $x = round(($this->width - $width)/2);
+            $x = round(($this->width - $width) / 2);
             $this->crop($x, 0, $x + $width, $height);
         } elseif ($this->height > $height && $this->width == $width && $crop) {
-            $y = round(($this->height - $height)/2);
+            $y = round(($this->height - $height) / 2);
             $this->crop(0, $y, $width, $height + $y);
         } elseif ($width > $this->width && $this->height == $height && !$crop) {
-            $this->createCopyImage(round(($width - $this->width)/2), 0, $width, $height);
+            $this->createCopyImage(round(($width - $this->width) / 2), 0, $width, $height);
         } elseif ($height > $this->height && $this->width == $width && !$crop) {
-            $this->createCopyImage(0, round(($height - $this->height)/2), $width, $height);
+            $this->createCopyImage(0, round(($height - $this->height) / 2), $width, $height);
         } else {
             $srcX = 0;
             $srcY = 0;
@@ -458,6 +458,14 @@ class GDImage
         return $this;
     }
 
+    /**
+     * Create fill and copy image. Helper for resize() method.
+     *
+     * @param int $x      X coordinates for copy
+     * @param int $y      Y coordinates for copy
+     * @param int $width  Source width
+     * @param int $height Source height
+     */
     private function createCopyImage($x, $y, $width, $height)
     {
         $newImage = imagecreatetruecolor($width, $height);
@@ -513,7 +521,7 @@ class GDImage
             } elseif ($posX == 'right') {
                 $posX = $this->width - $overlay->width;
             } elseif ($posX == 'center') {
-                $posX = round(($this->width - $overlay->width)/2);
+                $posX = round(($this->width - $overlay->width) / 2);
             }
         }
         
@@ -523,7 +531,7 @@ class GDImage
             } elseif ($posY == 'bottom') {
                 $posY = $this->height - $overlay->height;
             } elseif ($posY == 'center') {
-                $posY = round(($this->height - $overlay->height)/2);
+                $posY = round(($this->height - $overlay->height) / 2);
             }
         }
 
@@ -710,7 +718,7 @@ class GDImage
                     if ($where1 + 8 == $where2) {
                         $count++;
                     }
-                    $filePosition = $where2+1;
+                    $filePosition = $where2 + 1;
                 }
             }
         }
