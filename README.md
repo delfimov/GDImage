@@ -1,6 +1,6 @@
 [![StyleCI](https://styleci.io/repos/99135056/shield?branch=master)](https://styleci.io/repos/99135056)
-[![License](https://img.shields.io/badge/license-MIT%20License-blue.svg)](https://github.com/delfimov/GDImage/blob/master/LICENSE)
 [![Build Status](https://travis-ci.org/delfimov/GDImage.svg?branch=master)](https://travis-ci.org/delfimov/GDImage)
+[![License](https://img.shields.io/badge/license-MIT%20License-blue.svg)](https://github.com/delfimov/GDImage/blob/master/LICENSE)
 
 # GDImage
 
