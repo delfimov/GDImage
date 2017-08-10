@@ -38,7 +38,7 @@
     },
 
     "suggest": {
-        "ext-exif": "Needed for orientation auto detection for JPEG images"
+        "ext-exif": "Needed for orientation auto detection (JPEG images only)"
     },
 
     "scripts" : {
