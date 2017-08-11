@@ -15,6 +15,13 @@ class TranslateTest extends TestCase
         'gif' => 'test.gif',
     ];
 
+    private $TEST_IMAGES_ROTATE = [
+        [90,       'r90.jpg' ],
+        [180,      'r180.png'],
+        [270,      'r270.gif'],
+        ['random', 'r0.jpg'  ],
+    ];
+
     private $TEST_IMAGES_GIF = [
         [
             'isAnimated' => false,
@@ -52,28 +59,25 @@ class TranslateTest extends TestCase
 
     public function testMemoryLimit()
     {
+        $oldLimit = ini_get('memory_limit');
         foreach ($this->TEST_IMAGES as $format => $image) {
-            ini_set('memory_limit', '50000000');
+            ini_set('memory_limit', '30000000');
             $gdimage = new GDImage(__DIR__ . DIRECTORY_SEPARATOR . $image);
-            $this->assertEquals(true, $gdimage->memoryLimit == 50000000);
+            $this->assertEquals(true, $gdimage->memoryLimit == 30000000);
 
-            ini_set('memory_limit', '500000k');
+            ini_set('memory_limit', '50000k');
             $gdimage = new GDImage(__DIR__ . DIRECTORY_SEPARATOR . $image);
-            $this->assertEquals(true, $gdimage->memoryLimit == 500000 * pow(1024, 1));
+            $this->assertEquals(true, $gdimage->memoryLimit == 50000 * pow(1024, 1));
 
-            ini_set('memory_limit', '256m');
+            ini_set('memory_limit', '32m');
             $gdimage = new GDImage(__DIR__ . DIRECTORY_SEPARATOR . $image);
-            $this->assertEquals(true, $gdimage->memoryLimit == 256 * pow(1024, 2));
+            $this->assertEquals(true, $gdimage->memoryLimit == 32 * pow(1024, 2));
 
-            ini_set('memory_limit', '512M');
+            ini_set('memory_limit', '40M');
             $gdimage = new GDImage(__DIR__ . DIRECTORY_SEPARATOR . $image);
-            $this->assertEquals(true, $gdimage->memoryLimit == 512 * pow(1024, 2));
-
-            ini_set('memory_limit', '1G');
-            $gdimage = new GDImage(__DIR__ . DIRECTORY_SEPARATOR . $image);
-            $this->assertEquals(true, $gdimage->memoryLimit == 1 * pow(1024, 3));
+            $this->assertEquals(true, $gdimage->memoryLimit == 40 * pow(1024, 2));
         }
-
+        ini_set('memory_limit', $oldLimit);
     }
 
     /**
@@ -99,10 +103,13 @@ class TranslateTest extends TestCase
     /**
      * @dataProvider imageProviderRotate
      */
-    public function testRotate($src, $dst)
+    public function testRotate($src, $dst, $angle)
     {
+        if ($angle == 'random') {
+            $angle = rand(0, 360);
+        }
         $image = new GDImage(__DIR__ . DIRECTORY_SEPARATOR . $src);
-        $image->rotate(rand(0,360))->save(__DIR__ . DIRECTORY_SEPARATOR . $dst);
+        $image->rotate($angle)->save(__DIR__ . DIRECTORY_SEPARATOR . $dst);
         $this->assertFileExists(__DIR__ . DIRECTORY_SEPARATOR . $dst);
         unlink(__DIR__ . DIRECTORY_SEPARATOR . $dst);
     }
@@ -176,10 +183,11 @@ class TranslateTest extends TestCase
     public function imageProviderRotate()
     {
         $images = [];
-        foreach ($this->TEST_IMAGES as $format => $image) {
+        foreach ($this->TEST_IMAGES_ROTATE as $image) {
             $images[] = [
-                $image,
-                'rotate_' . $image
+                $image[1],
+                'rotate_' . $image[1],
+                $image[0]
             ];
         }
         return $images;

@@ -1,6 +1,6 @@
 [![StyleCI](https://styleci.io/repos/99135056/shield?branch=master)](https://styleci.io/repos/99135056)
 [![Build Status](https://travis-ci.org/delfimov/GDImage.svg?branch=master)](https://travis-ci.org/delfimov/GDImage)
-[![License](https://img.shields.io/badge/license-MIT%20License-blue.svg)](https://github.com/delfimov/GDImage/blob/master/LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/delfimov/GDImage/blob/master/LICENSE)
 [![SensioLabsInsight](https://insight.sensiolabs.com/projects/a6ab283e-ac26-4ff2-9b71-9aa2f0a45fbc/mini.png)](https://insight.sensiolabs.com/projects/a6ab283e-ac26-4ff2-9b71-9aa2f0a45fbc)
 
 # GDImage

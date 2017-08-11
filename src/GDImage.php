@@ -130,17 +130,17 @@ class GDImage
         if (!function_exists('imagecreatefrompng')) {
             throw new \Exception('GD is not available');
         }
-        $this->memoryLimit = $this->getMemoryLimit();
+        $this->setMemoryLimit();
         $this->getImage($fileName);
     }
 
 
     /**
-     * Get real memory limit
+     * Set real memory limit
      *
      * @return int
      */
-    private function getMemoryLimit()
+    private function setMemoryLimit()
     {
         $memLimit = ini_get('memory_limit');
         if (!empty($memLimit)) {
@@ -156,18 +156,14 @@ class GDImage
                 case "G":
                     $memLimit = $number * pow(1024, 3);
                     break;
-                case "T":
-                    $memLimit = $number * pow(1024, 4);
-                    break;
-                case "P":
-                    $memLimit = $number * pow(1024, 5);
-                    break;
                 default:
                     break;
             }
             $memLimit = intval($memLimit);
+            if (!empty($memLimit)) {
+                $this->memoryLimit = $memLimit;
+            }
         }
-        return empty($memLimit) ? $this->memoryLimit : $memLimit;
     }
 
 
