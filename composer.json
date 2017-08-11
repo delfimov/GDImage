@@ -4,49 +4,34 @@
     "type": "library",
     "description": "Easy to use image manipulation tool based on PHP-GD extension",
     "keywords": ["GD", "php-gd", "image", "resize", "rotate", "watermark", "merge", "overlay"],
-
     "homepage": "https://github.com/delfimov/gdimage/",
-
     "authors": [
         {
             "name": "Dmitry Elfimov",
             "email": "elfimov@gmail.com"
         }
     ],
-
     "autoload": {
         "psr-4": {
             "DElfimov\\GDImage\\": "./src"
         }
     },
-
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/delfimov/GDimage.git"
-    },
-
     "prefer-stable" : true,
-
     "require": {
         "php": ">=5.4.0",
         "ext-gd": "*"
     },
-
     "require-dev": {
         "squizlabs/php_codesniffer": "3.*",
         "phpunit/phpunit": "6.*"
     },
-
     "suggest": {
         "ext-exif": "Needed for orientation auto detection (JPEG images only)"
     },
-
     "scripts" : {
         "phpcs": "php ./vendor/squizlabs/php_codesniffer/bin/phpcs",
         "test": [
             "php ./vendor/bin/phpunit"
         ]
     }
-
-
 }

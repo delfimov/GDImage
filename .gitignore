@@ -1,6 +1,4 @@
 composer.lock
-/vendor
-/.idea
-/.php_cs.cache
-/tests/_back
+vendor
+.php_cs.cache
 coverage.xml

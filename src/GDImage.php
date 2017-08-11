@@ -48,11 +48,11 @@ class GDImage
     public $memoryLimit = 268435456; // 256 Mb
 
     /**
-     * RGB fill color
+     * RGB fill color. Default is black #000
      *
      * @var array
      */
-    public $fillColor = array(0, 0, 0);
+    public $fillColor = [0, 0, 0];
 
     /**
      * JPEG quality for output file, 0-100, where 100 is best quality
@@ -118,7 +118,7 @@ class GDImage
     public $src = null;
     
     /**
-     * Constructor.
+     * Constructor
      *
      * @param string $fileName Source image file name
      *
@@ -129,8 +129,18 @@ class GDImage
         if (!function_exists('imagecreatefrompng')) {
             throw new \Exception('GD is not available');
         }
+        $this->memoryLimit = $this->getMemoryLimit();
+        $this->getImage($fileName);
+    }
 
-        // get real memory limit
+
+    /**
+     * Get real memory limit
+     *
+     * @return int
+     */
+    private function getMemoryLimit()
+    {
         $memLimit = ini_get('memory_limit');
         if (preg_match('/^(\d+)(.)$/', $memLimit, $matches)) {
             if ($matches[2] == 'G') {
@@ -142,10 +152,7 @@ class GDImage
             }
         }
         $memLimit = (int) $memLimit;
-        $this->memoryLimit = empty($memLimit) ? $this->memoryLimit : $memLimit;
-
-
-        $this->getImage($fileName);
+        return empty($memLimit) ? $this->memoryLimit : $memLimit;
     }
 
 
@@ -305,10 +312,6 @@ class GDImage
      */
     public function crop($x1, $y1, $x2, $y2)
     {
-        if (empty($this->image)) {
-            return false;
-        }
-        
         if ($x1 > $x2) {
             $temp = $x1;
             $x1 = $x2;
@@ -337,8 +340,6 @@ class GDImage
         return $this;
     }
 
-
-
     /**
      * Resize image
      *
@@ -347,16 +348,12 @@ class GDImage
      * @param bool $crop         if true - crop image, otherwise - cover
      * @param bool $proportional stretch with source aspect ratio or not
      *
-     * @return $this|bool
+     * @return $this
      */
     public function resize($width, $height, $crop = false, $proportional = true)
     {
-        if (empty($this->image)) {
-            return false;
-        }
-    
         if ($width == $this->width && $this->height == $height) {
-            // nothing to do
+            // nothing to do, source and dst images are the same size
         } elseif ($this->width > $width && $this->height == $height && $crop) {
             $x = round(($this->width - $width) / 2);
             $this->crop($x, 0, $x + $width, $height);
@@ -368,94 +365,76 @@ class GDImage
         } elseif ($height > $this->height && $this->width == $width && !$crop) {
             $this->createCopyImage(0, round(($height - $this->height) / 2), $width, $height);
         } else {
-            $srcX = 0;
-            $srcY = 0;
-            $dstX = 0;
-            $dstY = 0;
+            $this->createCopyResampledImage($width, $height, $crop, $proportional);
+        }
+        return $this;
+    }
 
-            if ($width == 0) {
-                $width = $this->width;
-            }
-            
-            if ($height == 0) {
-                $height = $this->height;
-            }
-            
-            $oldRatio = round($this->width / $this->height, 2);
-            $newRatio = round($width / $height, 2);
-            
-            $srcHeight = $this->height;
-            $srcWidth = $this->width;
-           
-            $dstHeight = $height;
-            $dstWidth = $width;
-            
-            if ($proportional) {
-                if ($oldRatio > $newRatio) { // album to book
-                    if ($crop) {
-                        $hr = $this->height * $newRatio;
-                        $srcWidth = round($hr);
-                        $srcX = round(($this->width - $hr) / 2);
-                    } else {
-                        $dstHeight = round($width / $oldRatio);
-                        $dstY = round(($height - $dstHeight) / 2);
-                    }
-                } elseif ($oldRatio < $newRatio) { // book to album
-                    if ($crop) {
-                        $wr = $this->width / $newRatio;
-                        $srcY = round(($this->height - $wr) / 2);
-                        $srcHeight = round($wr);
-                    } else {
-                        $dstWidth = round($height * $oldRatio);
-                        $dstX = round(($width - $dstWidth) / 2);
-                    }
+    /**
+     * Create fill and copy resampled image. Helper for resize() method.
+     *
+     * @param int  $width        new width
+     * @param int  $height       new height
+     * @param bool $crop         if true - crop image, otherwise - cover
+     * @param bool $proportional stretch with source aspect ratio or not
+     */
+    private function createCopyResampledImage($width, $height, $crop, $proportional)
+    {
+        $srcX = 0;
+        $srcY = 0;
+        $dstX = 0;
+        $dstY = 0;
+        $oldRatio = round($this->width / $this->height, 2);
+        $newRatio = round($width / $height, 2);
+        $srcHeight = $this->height;
+        $srcWidth = $this->width;
+        $dstHeight = $height;
+        $dstWidth = $width;
+        if ($proportional) {
+            if ($oldRatio > $newRatio) { // album to book
+                if ($crop) {
+                    $hr = $this->height * $newRatio;
+                    $srcWidth = round($hr);
+                    $srcX = round(($this->width - $hr) / 2);
+                } else {
+                    $dstHeight = round($width / $oldRatio);
+                    $dstY = round(($height - $dstHeight) / 2);
+                }
+            } elseif ($oldRatio < $newRatio) { // book to album
+                if ($crop) {
+                    $wr = $this->width / $newRatio;
+                    $srcY = round(($this->height - $wr) / 2);
+                    $srcHeight = round($wr);
+                } else {
+                    $dstWidth = round($height * $oldRatio);
+                    $dstX = round(($width - $dstWidth) / 2);
                 }
             }
-
-            $newImage = imagecreatetruecolor($width, $height);
-            
-            $this->setAlpha($newImage, $this->alphablending, $this->savealpha);
-
-            
-            if ($this->alphablending) {
-                $color = imagecolorallocatealpha(
-                    $newImage,
-                    0,
-                    0,
-                    0,
-                    127
-                );
-                imagefill($newImage, 0, 0, $color);
-            } elseif ($dstY > 0 || $dstX > 0) {
-                $color = imagecolorallocate(
-                    $newImage,
-                    $this->fillColor[0],
-                    $this->fillColor[1],
-                    $this->fillColor[2]
-                );
-                imagefill($newImage, 0, 0, $color);
-            }
-
-            
-            imagecopyresampled(
-                $newImage,
-                $this->image,
-                $dstX,
-                $dstY,
-                $srcX,
-                $srcY,
-                $dstWidth,
-                $dstHeight,
-                $srcWidth,
-                $srcHeight
-            );
-            
-            $this->image = $newImage;
-            $this->width = $width;
-            $this->height = $height;
         }
-
-        return $this;
+        $newImage = imagecreatetruecolor($width, $height);
+        $this->setAlpha($newImage, $this->alphablending, $this->savealpha);
+        if ($this->alphablending) {
+            $color = imagecolorallocatealpha($newImage, 0, 0, 0, 127);
+            imagefill($newImage, 0, 0, $color);
+        } elseif ($dstY > 0 || $dstX > 0) {
+            $color = imagecolorallocate($newImage, $this->fillColor[0], $this->fillColor[1], $this->fillColor[2]);
+            imagefill($newImage, 0, 0, $color);
+        }
+        imagecopyresampled(
+            $newImage,
+            $this->image,
+            $dstX,
+            $dstY,
+            $srcX,
+            $srcY,
+            $dstWidth,
+            $dstHeight,
+            $srcWidth,
+            $srcHeight
+        );
+        $this->image = $newImage;
+        $this->width = $width;
+        $this->height = $height;
     }
 
     /**
@@ -482,16 +461,7 @@ class GDImage
                 )
             );
         }
-        imagecopy(
-            $newImage,
-            $this->image,
-            $x,
-            $y,
-            0,
-            0,
-            $this->width,
-            $this->height
-        );
+        imagecopy($newImage, $this->image, $x, $y, 0, 0, $this->width, $this->height);
         $this->image = $newImage;
         $this->width = $width;
     }
