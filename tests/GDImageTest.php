@@ -61,21 +61,21 @@ class TranslateTest extends TestCase
     {
         $oldLimit = ini_get('memory_limit');
         foreach ($this->TEST_IMAGES as $format => $image) {
-            ini_set('memory_limit', '30000000');
+            ini_set('memory_limit', '120000000');
             $gdimage = new GDImage(__DIR__ . DIRECTORY_SEPARATOR . $image);
-            $this->assertEquals(true, $gdimage->memoryLimit == 30000000);
+            $this->assertEquals(true, $gdimage->memoryLimit == 120000000);
 
-            ini_set('memory_limit', '50000k');
+            ini_set('memory_limit', '200000k');
             $gdimage = new GDImage(__DIR__ . DIRECTORY_SEPARATOR . $image);
-            $this->assertEquals(true, $gdimage->memoryLimit == 50000 * pow(1024, 1));
+            $this->assertEquals(true, $gdimage->memoryLimit == 200000 * pow(1024, 1));
 
-            ini_set('memory_limit', '32m');
+            ini_set('memory_limit', '190m');
             $gdimage = new GDImage(__DIR__ . DIRECTORY_SEPARATOR . $image);
-            $this->assertEquals(true, $gdimage->memoryLimit == 32 * pow(1024, 2));
+            $this->assertEquals(true, $gdimage->memoryLimit == 190 * pow(1024, 2));
 
-            ini_set('memory_limit', '40M');
+            ini_set('memory_limit', '210M');
             $gdimage = new GDImage(__DIR__ . DIRECTORY_SEPARATOR . $image);
-            $this->assertEquals(true, $gdimage->memoryLimit == 40 * pow(1024, 2));
+            $this->assertEquals(true, $gdimage->memoryLimit == 210 * pow(1024, 2));
         }
         ini_set('memory_limit', $oldLimit);
     }
