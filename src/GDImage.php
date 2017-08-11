@@ -42,10 +42,11 @@ class GDImage
 
     /**
      * Default memory limit
+     * Default PHP memory_limit=128Mb
      *
      * @var int
      */
-    public $memoryLimit = 268435456; // 256 Mb
+    public $memoryLimit = 134217728;
 
     /**
      * RGB fill color. Default is black #000
@@ -142,16 +143,30 @@ class GDImage
     private function getMemoryLimit()
     {
         $memLimit = ini_get('memory_limit');
-        if (preg_match('/^(\d+)(.)$/', $memLimit, $matches)) {
-            if ($matches[2] == 'G') {
-                $memLimit = $matches[1] * 1024 * 1024 * 1024; // nnnG -> nnn GB
-            } elseif ($matches[2] == 'M') {
-                $memLimit = $matches[1] * 1024 * 1024; // nnnM -> nnn MB
-            } elseif ($matches[2] == 'K') {
-                $memLimit = $matches[1] * 1024; // nnnK -> nnn KB
+        if (!empty($memLimit)) {
+            $letter = strtoupper(substr($memLimit, -1));
+            $number = intval(substr($memLimit, 0, -1));
+            switch ($letter) {
+                case "K":
+                    $memLimit = $number * 1024;
+                    break;
+                case "M":
+                    $memLimit = $number * pow(1024, 2);
+                    break;
+                case "G":
+                    $memLimit = $number * pow(1024, 3);
+                    break;
+                case "T":
+                    $memLimit = $number * pow(1024, 4);
+                    break;
+                case "P":
+                    $memLimit = $number * pow(1024, 5);
+                    break;
+                default:
+                    break;
             }
+            $memLimit = intval($memLimit);
         }
-        $memLimit = (int) $memLimit;
         return empty($memLimit) ? $this->memoryLimit : $memLimit;
     }
 
@@ -285,7 +300,7 @@ class GDImage
      *
      * @param float|int $angle             Rotation angle, in degrees
      * @param null      $bgColor           Specifies the color of the uncovered zone after the rotation
-     *                                      (see imagecolorallocate())
+     *                                     (see imagecolorallocate())
      * @param int       $ignoreTransparent If set and non-zero, transparent colors are ignored
      *
      * @return $this
@@ -352,9 +367,7 @@ class GDImage
      */
     public function resize($width, $height, $crop = false, $proportional = true)
     {
-        if ($width == $this->width && $this->height == $height) {
-            // nothing to do, source and dst images are the same size
-        } elseif ($this->width > $width && $this->height == $height && $crop) {
+        if ($this->width > $width && $this->height == $height && $crop) {
             $x = round(($this->width - $width) / 2);
             $this->crop($x, 0, $x + $width, $height);
         } elseif ($this->height > $height && $this->width == $width && $crop) {
@@ -364,7 +377,7 @@ class GDImage
             $this->createCopyImage(round(($width - $this->width) / 2), 0, $width, $height);
         } elseif ($height > $this->height && $this->width == $width && !$crop) {
             $this->createCopyImage(0, round(($height - $this->height) / 2), $width, $height);
-        } else {
+        } elseif ($width != $this->width || $this->height != $height) {
             $this->createCopyResampledImage($width, $height, $crop, $proportional);
         }
         return $this;
