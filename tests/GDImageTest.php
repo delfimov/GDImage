@@ -1,12 +1,12 @@
 <?php
 use PHPUnit\Framework\TestCase;
-use delfimov\GDImage\GDImage;
+use DElfimov\GDImage\GDImage;
 
 /**
- * @covers delfimov\GDImage\GDImage
+ * @covers DElfimov\GDImage\GDImage
  */
 
-class TranslateTest extends TestCase
+class GDImageTest extends TestCase
 {
 
     private $TEST_IMAGES = [
@@ -112,6 +112,18 @@ class TranslateTest extends TestCase
         $image->rotate($angle)->save(__DIR__ . DIRECTORY_SEPARATOR . $dst);
         $this->assertFileExists(__DIR__ . DIRECTORY_SEPARATOR . $dst);
         unlink(__DIR__ . DIRECTORY_SEPARATOR . $dst);
+    }
+
+    /**
+     * @dataProvider imageProvider
+     */
+    public function testText($format, GDImage $image)
+    {
+        $text = 'Проверка текста';
+        $filename = __DIR__ .'/saveTest.' . $format;
+        $image->addText($text, [])->save($filename);
+        $this->assertFileExists($filename);
+        unlink($filename);
     }
 
     /**

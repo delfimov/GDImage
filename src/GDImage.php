@@ -117,7 +117,16 @@ class GDImage
      * @var null|string
      */
     public $src = null;
-    
+
+    public $textOptions = [
+        'size' => 20,
+        'angle' => 0,
+        'x' => 0,
+        'y' => 0,
+        'color' => [0, 0, 0],
+        'font' => '/../fonts/Roboto-Medium.ttf'
+    ];
+
     /**
      * Constructor
      *
@@ -130,6 +139,7 @@ class GDImage
         if (!function_exists('imagecreatefrompng')) {
             throw new \Exception('GD is not available');
         }
+        $this->textOptions['font'] = __DIR__ . $this->textOptions['font'];
         $this->setMemoryLimit();
         $this->getImage($fileName);
     }
@@ -138,7 +148,6 @@ class GDImage
     /**
      * Set real memory limit
      *
-     * @return int
      */
     private function setMemoryLimit()
     {
@@ -702,5 +711,21 @@ class GDImage
             }
         }
         return $count > 1;
+    }
+
+    public function addText($text, array $options = [])
+    {
+        $options = array_merge($this->textOptions, $options);
+        imagettftext(
+            $this->image,
+            $options['size'],
+            $options['angle'],
+            $options['x'],
+            $options['y'],
+            imagecolorallocate($this->image, $options['color'][0], $options['color'][1], $options['color'][2]),
+            $options['font'],
+            $text
+        );
+        return $this;
     }
 }
