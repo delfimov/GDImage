@@ -50,7 +50,8 @@ $image->setFillColor([255, 0, 0]);
 // with empty areas filled with color specified in setFillColor() method
 $image->resize(1280, 720);
 
-/* The first parameter is text to add, 
+/* Add text to image 
+The first parameter is text to add, 
 the second parameter is optional, by default equals to: 
 [
     'size' => 20,
