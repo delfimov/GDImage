@@ -14,7 +14,7 @@ Easy to use image manipulation tool based on PHP-GD extension.
  * JPEG, PNG, GIF support. 
  * Method chaining.
  * JPEG autorotation (ext-exif required) based on EXIF header
- * Easy to resize, crop, rotate, flip, merge, set opactity
+ * Easy to resize, crop, rotate, add text, flip, merge, set opactity
 
 ## Requirements
 
@@ -49,6 +49,28 @@ $image->setFillColor([255, 0, 0]);
 // Resize image. By default images are resized proportional and are not cropped,  
 // with empty areas filled with color specified in setFillColor() method
 $image->resize(1280, 720);
+
+/* The first parameter is text to add, 
+the second parameter is optional, by default equals to: 
+[
+    'size' => 20,
+    'angle' => 0,
+    'x' => 0,
+    'y' => 0,
+    'color' => [0, 0, 0],
+    'font' => '/../fonts/Roboto-Medium.ttf'
+] 
+*/
+$image->addText(
+    'Sample text to add',
+    [
+        'font' => __DIR__ . '/../fonts/Roboto-Medium.ttf',
+        'size' => 18,
+        'x' => 150,
+        'y' => 100,
+        'color' => [255, 0, 0]
+    ]
+);
 
 // Save image
 $image->save('path/to/newimage.jpg');

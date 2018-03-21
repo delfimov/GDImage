@@ -42,6 +42,16 @@ header('Content-Type: text/html; charset=utf-8');
 
     $image = new DElfimov\GDImage\GDImage('../tests/test.jpg');
     $image->resize(600, 400, true)
+        ->addText(
+            'Sample text to add',
+            [
+                'font' => __DIR__ . '/../fonts/Roboto-Medium.ttf',
+                'size' => 18,
+                'x' => 150,
+                'y' => 100,
+                'color' => [255, 0, 0]
+            ]
+        )
         ->merge($logo, 'right', 'bottom')
         ->save(__DIR__ . '/' . 'example.jpg');
 
