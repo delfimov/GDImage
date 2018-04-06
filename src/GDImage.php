@@ -118,6 +118,11 @@ class GDImage
      */
     public $src = null;
 
+    /**
+     * Default text settings
+     *
+     * @var array
+     */
     public $textOptions = [
         'size' => 20,
         'angle' => 0,
@@ -491,6 +496,7 @@ class GDImage
      * @param int            $posX    position X
      * @param int            $posY    position Y
      *
+     * @throws \Exception
      * @return $this|bool
      */
     public function merge($overlay, $posX, $posY)
@@ -500,7 +506,11 @@ class GDImage
         }
         
         if (is_string($overlay)) {
-            $overlay = new GDImage($overlay);
+            try {
+                $overlay = new GDImage($overlay);
+            } catch (\Exception $e) {
+                throw new \Exception('Overlay error: ' . $e->getMessage());
+            }
         }
         
         if (!is_int($posX)) {
@@ -713,6 +723,12 @@ class GDImage
         return $count > 1;
     }
 
+    /**
+     * @param string $text
+     * @param array $options
+     *
+     * @return $this
+     */
     public function addText($text, array $options = [])
     {
         $options = array_merge($this->textOptions, $options);
@@ -725,6 +741,53 @@ class GDImage
             imagecolorallocate($this->image, $options['color'][0], $options['color'][1], $options['color'][2]),
             $options['font'],
             $text
+        );
+        return $this;
+    }
+
+    /**
+     * @param string $text
+     * @param array $options
+     *
+     * @return array|bool width and height or false on fail
+     * @throws \Exception
+     */
+    public function getTextSize($text, array $options = [])
+    {
+        $options = array_merge($this->textOptions, $options);
+        $space = imagettfbbox(
+            $options['size'],
+            $options['angle'],
+            $options['font'],
+            $text
+        );
+        if (empty($space)) {
+            throw new \Exception('getTextSize error');
+        }
+        return [
+            'width'  => abs($space[4] - $space[0]),
+            'height' => abs($space[5] - $space[1]),
+        ];
+    }
+
+    /**
+     * @param $x1
+     * @param $y1
+     * @param $x2
+     * @param $y2
+     * @param array $color rgb fill color
+     *
+     * @return $this
+     */
+    public function addRectangle($x1, $y1, $x2, $y2, array $color)
+    {
+        imagefilledrectangle(
+            $this->image,
+            $x1,
+            $y1,
+            $x2,
+            $y2,
+            imagecolorallocate($this->image, $color[0], $color[1], $color[2])
         );
         return $this;
     }
