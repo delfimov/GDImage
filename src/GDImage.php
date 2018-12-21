@@ -226,8 +226,12 @@ class GDImage
                 $this->type = 'png';
                 $this->image = imagecreatefrompng($fileName);
                 break;
+            case IMAGETYPE_WEBP:
+                $this->type = 'png';
+                $this->image = imagecreatefromwebp($fileName);
+                break;
             default:
-                throw new \Exception('Supported formats are gif, jpg & png only');
+                throw new \Exception('Supported formats are gif, jpg, png & webp only');
                 break;
         }
 
@@ -649,6 +653,9 @@ class GDImage
         }
 
         switch ($format) {
+            case 'webp':
+                $result = imagewebp($this->image, $to);
+                break;
             case 'gif':
                 $result = imagegif($this->image, $to);
                 break;

@@ -11,7 +11,7 @@ Easy to use image manipulation tool based on PHP-GD extension.
 ## Key features
 
  * Easy to use.
- * JPEG, PNG, GIF support. 
+ * JPEG, PNG, GIF, WEBP support. 
  * Method chaining.
  * JPEG autorotation (ext-exif required) based on EXIF header
  * Easy to resize, crop, rotate, add text, flip, merge, set opactity
@@ -82,5 +82,5 @@ $image->save('path/to/newimage.jpg');
  * Examples
  * Readme
  * More unit tests
- * Support animated gifs
+ * Animated gifs support
 

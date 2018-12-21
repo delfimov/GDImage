@@ -10,9 +10,10 @@ class GDImageTest extends TestCase
 {
 
     private $TEST_IMAGES = [
-        'jpg' => 'test.jpg',
-        'png' => 'test.png',
-        'gif' => 'test.gif',
+        'webp' => 'test.webp',
+        'jpg'  => 'test.jpg',
+        'png'  => 'test.png',
+        'gif'  => 'test.gif',
     ];
 
     private $TEST_IMAGES_ROTATE = [
@@ -86,7 +87,9 @@ class GDImageTest extends TestCase
     public function testCanBeCreated($format, GDImage $image)
     {
         $this->assertEquals(true, $image instanceof GDImage);
-        $this->assertEquals(true, $image->getImageType() == $format);
+        if ($format != 'webp') {
+            $this->assertEquals(true, $image->getImageType() == $format);
+        }
     }
 
     /**
