@@ -194,7 +194,7 @@ class GDImage
         if (!file_exists($fileName)) {
             throw new \Exception('Image ' . $fileName . ' is not exists');
         }
-       
+
         $info = getimagesize($fileName);
 
         $channels = empty($info['channels']) ? 3 : $info['channels'];
@@ -346,26 +346,26 @@ class GDImage
             $x1 = $x2;
             $x2 = $temp;
         }
-        
+
         if ($y1 > $y2) {
             $temp = $y1;
             $y1 = $y2;
             $y2 = $temp;
         }
-        
+
         $width = $x2 - $x1;
         $height = $y2 - $y1;
-        
+
         $image = imagecreatetruecolor($width, $height);
 
         $this->alpha($this->alphablending, $this->savealpha);
-        
+
         imagecopy($image, $this->image, 0, 0, $x1, $y1, $width, $height);
-        
+
         $this->image = $image;
         $this->width = $width;
         $this->height = $height;
-        
+
         return $this;
     }
 
@@ -508,7 +508,7 @@ class GDImage
         if (empty($this->image)) {
             return false;
         }
-        
+
         if (is_string($overlay)) {
             try {
                 $overlay = new GDImage($overlay);
@@ -516,7 +516,7 @@ class GDImage
                 throw new \Exception('Overlay error: ' . $e->getMessage());
             }
         }
-        
+
         if (!is_int($posX)) {
             if ($posX == 'left') {
                 $posX = 0;
@@ -526,7 +526,7 @@ class GDImage
                 $posX = round(($this->width - $overlay->width) / 2);
             }
         }
-        
+
         if (!is_int($posY)) {
             if ($posY == 'top') {
                 $posY = 0;
@@ -549,7 +549,7 @@ class GDImage
             $overlay->width,
             $overlay->height
         );
-        
+
         return $this;
     }
 
@@ -566,7 +566,7 @@ class GDImage
         if (empty($this->image)) {
             return false;
         }
-        
+
         $this->alpha();
 
         $opacity /= 100;
@@ -646,7 +646,7 @@ class GDImage
         if (empty($this->image)) {
             return false;
         }
-        
+
         if (empty($format)) {
             $dotPos = strrpos($to, '.');
             $format = strtolower($dotPos < 1 ? '' : substr($to, $dotPos + 1));
