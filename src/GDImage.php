@@ -239,6 +239,10 @@ class GDImage
             throw new \Exception('Error while reading file ' . $this->src);
         }
 
+        imagepalettetotruecolor($this->image);
+        imagealphablending($this->image, true);
+        imagesavealpha($this->image, true);
+
         if ($this->type == 'jpg') {
             $this->imageExifOrientation();
         }
